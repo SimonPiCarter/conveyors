@@ -12,6 +12,7 @@ void LineGodot::_ready()
 
 		multi_mesh_l->set_mesh(_mesh);
 		multi_mesh_l->set_transform_format(MultiMesh::TransformFormat::TRANSFORM_3D);
+		multi_mesh_l->set_use_colors(true);
 		multi_mesh_l->set_instance_count(_line ? _line->items.size() : 10000);
 		multi_mesh_l->set_visible_instance_count(_line ? get_content_size(*_line) : 10000);
 
@@ -98,7 +99,18 @@ void LineGodot::_process(double delta_p)
 			Vector3 world_pos_l = segment_l.origin + dir3d_l * seg_pos_l;
 
 			get_multimesh()->set_instance_transform(i, Transform3D(Basis(), world_pos_l));
-
+			if(item.idx == 1)
+			{
+				get_multimesh()->set_instance_color(i, Color(1.,0.2,0.2));
+			}
+			else if(item.idx == 2)
+			{
+				get_multimesh()->set_instance_color(i, Color(0.2,1.,0.2));
+			}
+			else
+			{
+				get_multimesh()->set_instance_color(i, Color(0.2,0.2,1.));
+			}
 			pos_l += item.dist_to_next + 100;
 			idx_l = item.next;
 		}

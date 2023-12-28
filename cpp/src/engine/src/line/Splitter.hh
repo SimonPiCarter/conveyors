@@ -4,7 +4,7 @@
 
 struct Splitter
 {
-	Splitter(size_t capacity_p) : innerLine(capacity_p) {}
+	Splitter() : innerLine(2) {}
 
 	Line * entry = nullptr;
 	Line * first = nullptr;

@@ -4,8 +4,6 @@ var mesh = preload("res://modles/box-small.tres")
 @onready var manager_godot = $ManagerGodot
 var cur_points = []
 var entry = null
-var first = null
-var second = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -14,19 +12,32 @@ func _ready():
 	add_child(entry)
 
 	in_points = [Vector2i(-10,0), Vector2i(-10,-25), Vector2i(-25,-25)]
-	first = manager_godot.add_line(in_points, 160, mesh)
+	var first = manager_godot.add_line(in_points, 160, mesh)
 	add_child(first)
 
-	in_points = [Vector2i(-40,0), Vector2i(-40,-25), Vector2i(-25,-25)]
-	second = manager_godot.add_line(in_points, 160, mesh)
+	in_points = [Vector2i(-40,-20), Vector2i(-40,-25), Vector2i(-25,-25)]
+	var second = manager_godot.add_line(in_points, 160, mesh)
 	add_child(second)
 
-	manager_godot.add_splitter(entry, first, second)
+	in_points = [Vector2i(-30,0), Vector2i(-40,-20)]
+	var third = manager_godot.add_line(in_points, 160, mesh)
+	add_child(third)
+
+	in_points = [Vector2i(-50,0), Vector2i(-40,-20)]
+	var fourth = manager_godot.add_line(in_points, 160, mesh)
+	add_child(fourth)
+
+	manager_godot.add_sorter(entry, first, second, 1)
+	manager_godot.add_sorter(second, third, fourth, 2)
+
+	manager_godot.add_score_factory(first, 5, 1)
+	manager_godot.add_score_factory(third, 5, 2)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	$CanvasLayer/Label.text = String.num(1./delta, 2)
-	entry.add_to_line(1)
+	$CanvasLayer/Label.text = String.num(1./delta, 2)+"\n"+String.num(manager_godot.get_score())
+	var rand = RandomNumberGenerator.new()
+	entry.add_to_line(rand.randi_range(1, 3))
 
 func _input(event):
 	if event is InputEventMouseButton and event.is_pressed():
@@ -43,6 +54,3 @@ func _input(event):
 		add_child(line)
 		cur_points = []
 
-	if event is InputEventKey and event.physical_keycode == KEY_Q and event.is_pressed():
-		first.consume_in_line()
-		second.consume_in_line()
