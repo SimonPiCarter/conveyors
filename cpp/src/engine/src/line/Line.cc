@@ -50,10 +50,28 @@ void step(Line &line_p)
 	unsigned long performed_movement = line_p.speed - remaining_movement;
 	line_p.dist_start += performed_movement;
 }
+bool can_add(Line const &line_p)
+{
+	if(line_p.dist_start < 100 || line_p.free_idx.size() == 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+size_t can_consume(Line const &line_p)
+{
+	if(line_p.dist_end > 0 || is_empty(line_p))
+	{
+		return 0;
+	}
+	ItemOnLine const & item_l = line_p.items[line_p.first];
+	return item_l.idx;
+}
 
 bool add_to_start(Line &line_p, size_t item_p)
 {
-	if(line_p.dist_start < 100 || line_p.free_idx.size() == 0)
+	if(!can_add(line_p))
 	{
 		return false;
 	}
@@ -81,6 +99,21 @@ bool add_to_start(Line &line_p, size_t item_p)
 	line_p.dist_start = 0;
 
 	return true;
+}
+
+size_t consume(Line &line_p)
+{
+	if(!can_consume(line_p))
+	{
+		return 0;
+	}
+
+	ItemOnLine const & item_l = line_p.items[line_p.first];
+	line_p.free_idx.push_back(line_p.first);
+	line_p.first = item_l.next;
+	line_p.dist_end = item_l.dist_to_next + 100;
+
+	return item_l.idx;
 }
 
 size_t get_content_size(Line const &line_p)

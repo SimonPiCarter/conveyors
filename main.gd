@@ -1,50 +1,48 @@
 extends Node3D
 
-var lines = []
 var mesh = preload("res://modles/box-small.tres")
-
-func set_up_line(list_points, speed):
-	var old_point = null
-	var length = 0
-	for point in list_points:
-		if old_point != null:
-			if old_point.x != point.x and old_point.y != point.y:
-				push_error("Cannot create line with diagonals")
-				return
-			length += abs(old_point.x - point.x) + abs(old_point.y - point.y)
-		old_point = point
-
-	var new_line = LineGodot.new()
-	new_line.set_mesh(mesh)
-	print(2*length, " ",speed)
-	new_line.set_up_line(2*length, speed)
-
-	old_point = null
-	var cur_length = 0
-	for point in list_points:
-		if old_point != null:
-			length = abs(old_point.x - point.x) + abs(old_point.y - point.y)
-			cur_length += 2 * length * 100.
-			new_line.add_segment_to_line(
-				Vector3(old_point.x*1.2,0,old_point.y*1.2),
-				Vector3(point.x*1.2,0,point.y*1.2),
-				cur_length)
-			print(Vector3(old_point.x*1.2,0,old_point.y*1.2), Vector3(point.x*1.2,0,point.y*1.2))
-		old_point = point
-
-	add_child(new_line)
-	lines.push_back(new_line)
-
+@onready var manager_godot = $ManagerGodot
+var cur_points = []
+var entry = null
+var first = null
+var second = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var points : Array[Vector2i] = [Vector2i(0,0), Vector2i(25,0), Vector2i(25,-25)]
-	set_up_line(points, 160)
-	points = [Vector2i(-25,-25), Vector2i(-25,0), Vector2i(0,0), Vector2i(0,-25)]
-	set_up_line(points, 160)
+	var in_points = [Vector2i(-25,-25), Vector2i(-25,0)]
+	entry = manager_godot.add_line(in_points, 160, mesh)
+	add_child(entry)
+
+	in_points = [Vector2i(-10,0), Vector2i(-10,-25), Vector2i(-25,-25)]
+	first = manager_godot.add_line(in_points, 160, mesh)
+	add_child(first)
+
+	in_points = [Vector2i(-40,0), Vector2i(-40,-25), Vector2i(-25,-25)]
+	second = manager_godot.add_line(in_points, 160, mesh)
+	add_child(second)
+
+	manager_godot.add_splitter(entry, first, second)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	$CanvasLayer/Label.text = String.num(1./delta, 2)
-	for line_ in lines:
-		line_.add_to_line(0)
+	entry.add_to_line(1)
+
+func _input(event):
+	if event is InputEventMouseButton and event.is_pressed():
+		var camera3d = $Camera3D
+		var from = camera3d.project_ray_origin(event.position)
+		var dist = from.y/camera3d.project_ray_normal(event.position).y
+		var to = from - camera3d.project_ray_normal(event.position) * dist
+
+		var vec = Vector2i(to.x/1.2, to.z/1.2)
+		cur_points.push_front(vec)
+
+	if event is InputEventKey and event.physical_keycode == KEY_SPACE and event.is_pressed():
+		var line = manager_godot.add_line(cur_points, 160, mesh)
+		add_child(line)
+		cur_points = []
+
+	if event is InputEventKey and event.physical_keycode == KEY_Q and event.is_pressed():
+		first.consume_in_line()
+		second.consume_in_line()

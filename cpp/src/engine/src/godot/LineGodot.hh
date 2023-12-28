@@ -27,11 +27,17 @@ public:
 
 	void set_up_line(int capacity_p, int speed_p);
 	void add_to_line(int item);
+	int consume_in_line();
 	void add_segment_to_line(godot::Vector3 const &origin_p, godot::Vector3 const &destination_p, int end_p);
 
 	// Will be called by Godot when the class is registered
 	// Use this to add properties to your class
 	static void _bind_methods();
+
+	Line * getLine() { return _line; }
+	Line const * getLine() const { return _line; }
+
+	void update();
 
 private:
 	godot::Ref<godot::Mesh> _mesh;

@@ -6,6 +6,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "godot/LineGodot.hh"
+#include "godot/ManagerGodot.hh"
 
 
 void initialize_engine_module(godot::ModuleInitializationLevel p_level) {
@@ -15,6 +16,7 @@ void initialize_engine_module(godot::ModuleInitializationLevel p_level) {
 
   // REGISTER CLASSES HERE LATER
     godot::ClassDB::register_class<LineGodot>();
+    godot::ClassDB::register_class<ManagerGodot>();
 }
 
 void uninitialize_engine_module(godot::ModuleInitializationLevel p_level) {

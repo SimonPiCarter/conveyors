@@ -32,7 +32,10 @@ struct Line
 /// @brief performs a step on a given line
 void step(Line &line_p);
 
+bool can_add(Line const &line_p);
+size_t can_consume(Line const &line_p);
 bool add_to_start(Line &line_p, size_t item_p);
+size_t consume(Line &line_p);
 
 size_t get_content_size(Line const &line_p);
 

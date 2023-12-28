@@ -11,7 +11,7 @@ script = ExtResource("1_t344v")
 transform = Transform3D(0.962251, 0.0976719, -0.254033, 0, 0.933386, 0.358873, 0.272163, -0.345326, 0.898152, -3.75943, 1.70759, 1.63314)
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-1, -5.31588e-14, -8.74228e-08, -8.52685e-08, 0.22063, 0.975358, 1.9288e-08, 0.975358, -0.22063, 0.169456, 42.2414, -42.0706)
+transform = Transform3D(-1, -8.51332e-14, -8.74228e-08, -8.52685e-08, 0.22063, 0.975358, 1.9288e-08, 0.975358, -0.22063, -42.518, 31.8752, -31.9516)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -89,3 +89,5 @@ mesh = ExtResource("2_0ode5")
 [node name="Box-small4" type="MeshInstance3D" parent="."]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, -30)
 mesh = ExtResource("2_0ode5")
+
+[node name="ManagerGodot" type="ManagerGodot" parent="."]
