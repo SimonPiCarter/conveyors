@@ -12,8 +12,8 @@ void LineGodot::_ready()
 
 		multi_mesh_l->set_mesh(_mesh);
 		multi_mesh_l->set_transform_format(MultiMesh::TransformFormat::TRANSFORM_3D);
-		multi_mesh_l->set_instance_count(10000);
-		multi_mesh_l->set_visible_instance_count(10000);
+		multi_mesh_l->set_instance_count(_line ? _line->items.size() : 10000);
+		multi_mesh_l->set_visible_instance_count(_line ? get_content_size(*_line) : 10000);
 
 		set_multimesh(multi_mesh_l);
 		for(size_t i = 0 ; i < 10 ; ++i)
@@ -28,15 +28,13 @@ void LineGodot::_ready()
 
 void LineGodot::_process(double delta_p)
 {
-	static double elapsed = 0.;
-	static double speed = 0.5;
-	elapsed += delta_p;
+	_elapsed += delta_p;
 
-	if(elapsed >= 0.1 && _line)
+	if(_elapsed >= 0.1 && _line)
 	{
 		if(old_pos.size() != get_content_size(*_line))
 		{
-			old_pos.resize(get_content_size(*_line), Vector3());
+			old_pos.resize(get_content_size(*_line), 0.);
 		}
 		size_t idx_l = _line->first;
 		unsigned long pos_l = _line->dist_end;
@@ -44,7 +42,7 @@ void LineGodot::_process(double delta_p)
 		{
 			ItemOnLine const & item = _line->items[idx_l];
 
-			old_pos[i] = Vector3(pos_l , 0, 0);
+			old_pos[i] = pos_l;
 
 			pos_l += item.dist_to_next + 100;
 			idx_l = item.next;
@@ -52,22 +50,43 @@ void LineGodot::_process(double delta_p)
 
 		step(*_line);
 		get_multimesh()->set_visible_instance_count(get_content_size(*_line));
-		elapsed = 0;
+		_elapsed = 0;
 	}
 
 	if(get_multimesh().is_valid() && _line)
 	{
-		double partial_step = std::min(1., elapsed / 0.1);
+		double partial_step = std::min(1., _elapsed / 0.1);
 		size_t idx_l = _line->first;
 		unsigned long pos_l = _line->dist_end;
+		LineSegment segment_l { Vector3(0,0,0), Vector3(_line->items.size()*100/166., 0, 0), 0, _line->items.size()*100 };
+		if(!_segments.empty())
+		{
+			segment_l = _segments[0];
+		}
+		size_t index_segment_l = 0;
 		for(size_t i = 0 ; i < get_multimesh()->get_visible_instance_count() && idx_l < _line->items.size() ; ++i)
 		{
 			ItemOnLine const & item = _line->items[idx_l];
-			Vector3 world_pos_l(pos_l, 0, 0);
-			Vector3 dir_l = world_pos_l - old_pos[i];
-			world_pos_l = old_pos[i] + dir_l * partial_step;
+			double line_pos_l = pos_l;
 
-			get_multimesh()->set_instance_transform(i, Transform3D(Basis(), world_pos_l / 166.));
+			// look up for segment
+			while(index_segment_l+1 < _segments.size() && segment_l.end < pos_l)
+			{
+				++index_segment_l;
+				segment_l = _segments[index_segment_l];
+			}
+
+			godot::Vector3 dir3d_l = segment_l.destination - segment_l.origin;
+			double seg_pos_old_l = (old_pos[i] - segment_l.start)/(segment_l.end - segment_l.start);
+			double seg_pos_new_l = (line_pos_l - segment_l.start)/(segment_l.end - segment_l.start);
+
+			double dir_l = seg_pos_new_l - seg_pos_old_l;
+			line_pos_l = seg_pos_old_l + dir_l * partial_step;
+
+			// convert line pos to world pos
+			Vector3 world_pos_l = segment_l.origin + dir3d_l * line_pos_l;
+
+			get_multimesh()->set_instance_transform(i, Transform3D(Basis(), world_pos_l));
 
 			pos_l += item.dist_to_next + 100;
 			idx_l = item.next;
@@ -80,9 +99,13 @@ void LineGodot::set_up_line(int capacity_p, int speed_p)
 	delete _line;
 	_line = new Line(capacity_p);
 	_line->speed = speed_p;
+	_segments.clear();
 
-	get_multimesh()->set_instance_count(capacity_p);
-	get_multimesh()->set_visible_instance_count(0);
+	if(get_multimesh().is_valid())
+	{
+		get_multimesh()->set_instance_count(capacity_p);
+		get_multimesh()->set_visible_instance_count(0);
+	}
 }
 
 void LineGodot::add_to_line(int item)
@@ -93,6 +116,20 @@ void LineGodot::add_to_line(int item)
 	}
 }
 
+void LineGodot::add_segment_to_line(godot::Vector3 const &origin_p, godot::Vector3 const &destination_p, int end_p)
+{
+	if(end_p < 0)
+	{
+		UtilityFunctions::push_error("Cannot add_segment_to_line with end < 0");
+	}
+	unsigned long start_l = 0;
+	if(!_segments.empty())
+	{
+		start_l = _segments.back().end;
+	}
+	_segments.push_back({origin_p, destination_p, start_l, (unsigned long)end_p});
+}
+
 void LineGodot::_bind_methods()
 {
 		ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &LineGodot::set_mesh);
@@ -100,6 +137,8 @@ void LineGodot::_bind_methods()
 
 		ClassDB::bind_method(D_METHOD("set_up_line", "capacity", "speed"), &LineGodot::set_up_line);
 		ClassDB::bind_method(D_METHOD("add_to_line", "item"), &LineGodot::add_to_line);
+		ClassDB::bind_method(D_METHOD("add_segment_to_line", "origin", "destination", "end"), &LineGodot::add_segment_to_line);
+
 
 		ADD_GROUP("LineGodot", "LineGodot_");
 		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
