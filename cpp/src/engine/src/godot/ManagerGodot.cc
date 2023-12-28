@@ -36,6 +36,7 @@ void ManagerGodot::_process(double delta_p)
 			process(facto_l);
 		}
 		step_and_load<Splitter>(_splitters);
+		step_and_load<Merger>(_mergers);
 		step_and_load<Sorter>(_sorters);
 
 		for(LineGodot *line_l : _lines)
@@ -44,6 +45,7 @@ void ManagerGodot::_process(double delta_p)
 		}
 
 		unload<Splitter>(_splitters);
+		unload<Merger>(_mergers);
 		unload<Sorter>(_sorters);
 
 		_elapsed = 0;
@@ -122,6 +124,19 @@ void ManagerGodot::add_splitter(LineGodot * entry_p, LineGodot * first_p, LineGo
 	_splitters.push_back(splitter_l);
 }
 
+void ManagerGodot::add_merger(LineGodot * output_p, LineGodot * first_p, LineGodot * second_p)
+{
+	Merger merger_l;
+	merger_l.innerLine.speed = std::max(first_p->getLine()->speed, second_p->getLine()->speed);
+
+	merger_l.output = output_p->getLine();
+	merger_l.first = first_p->getLine();
+	merger_l.second = second_p->getLine();
+
+	_mergers.push_back(merger_l);
+}
+
+
 void ManagerGodot::add_sorter(LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p, int type_p)
 {
 	if(type_p < 0)
@@ -164,6 +179,7 @@ void ManagerGodot::_bind_methods()
 
 	ClassDB::bind_method(D_METHOD("add_line", "points", "speed"), &ManagerGodot::add_line);
 	ClassDB::bind_method(D_METHOD("add_splitter", "entry", "first", "second"), &ManagerGodot::add_splitter);
+	ClassDB::bind_method(D_METHOD("add_merger", "output", "first", "second"), &ManagerGodot::add_merger);
 	ClassDB::bind_method(D_METHOD("add_sorter", "entry", "first", "second", "type"), &ManagerGodot::add_sorter);
 
 	ClassDB::bind_method(D_METHOD("add_score_factory", "entry", "duration", "type"), &ManagerGodot::add_score_factory);
