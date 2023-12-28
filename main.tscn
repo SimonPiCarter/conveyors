@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://7v6pbcmnw0px"]
+[gd_scene load_steps=5 format=3 uid="uid://7v6pbcmnw0px"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_t344v"]
 [ext_resource type="ArrayMesh" uid="uid://itu40uiio077" path="res://modles/box-small.tres" id="2_0ode5"]
+[ext_resource type="Script" path="res://camera_free.gd" id="2_r2mja"]
 [ext_resource type="PackedScene" uid="uid://dp3v1t4yhdt7" path="res://modles/conveyor.glb" id="3_75u3o"]
 
 [node name="Node3D" type="Node3D"]
@@ -12,6 +13,7 @@ transform = Transform3D(0.962251, 0.0976719, -0.254033, 0, 0.933386, 0.358873, 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-1, -8.51332e-14, -8.74228e-08, -8.52685e-08, 0.22063, 0.975358, 1.9288e-08, 0.975358, -0.22063, -42.518, 31.8752, -31.9516)
+script = ExtResource("2_r2mja")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
