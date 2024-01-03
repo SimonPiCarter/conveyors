@@ -117,8 +117,11 @@ void set_line_in_grid(Grid &grid_p, std::vector<godot::Vector2i> const &points_p
 	{
 		int x = pair_l.first;
 		int y = pair_l.second;
-		grid_p.set_case_type(x, y, CaseType::BELT);
-		grid_p.set_case_index(x, y, idx_p);
+		if(grid_p.get_case_type(x, y) == CaseType::FREE)
+		{
+			grid_p.set_case_type(x, y, CaseType::BELT);
+			grid_p.set_case_index(x, y, idx_p);
+		}
 	}
 }
 
@@ -129,7 +132,11 @@ void unset_line_in_grid(Grid &grid_p, std::vector<godot::Vector2i> const &points
 	{
 		int x = pair_l.first;
 		int y = pair_l.second;
-		grid_p.set_case_type(x, y, CaseType::FREE);
-		grid_p.set_case_index(x, y, 0);
+
+		if(grid_p.get_case_type(x, y) == CaseType::BELT)
+		{
+			grid_p.set_case_type(x, y, CaseType::FREE);
+			grid_p.set_case_index(x, y, 0);
+		}
 	}
 }

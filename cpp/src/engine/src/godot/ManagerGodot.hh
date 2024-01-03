@@ -32,9 +32,16 @@ public:
 
 	bool check_line(godot::TypedArray<godot::Vector2i> const &points_p);
 	bool check_point(godot::Vector2i const &point_p);
+	int get_point_index(godot::Vector2i const &point_p);
+	int get_point_type(godot::Vector2i const &point_p);
 	int get_line_from_point(godot::Vector2i const &point_p);
 
-	void add_splitter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p);
+	int add_splitter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p);
+	int add_splitter_from_line(int line_p);
+	bool connect_line_to_splitter_output(int line_p, int splitter_p);
+	bool connect_line_to_splitter_input(int line_p, int splitter_p);
+	godot::Vector2i const &get_splitter_pos(int splitter_p) const;
+
 	void add_merger(godot::Vector2i const &pos_p, LineGodot * output_p, LineGodot * first_p, LineGodot * second_p);
 	void add_sorter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p, int type_p);
 	void add_bridge(LineGodot * entry_p, LineGodot * output_p, int length_p);
@@ -49,7 +56,7 @@ public:
 
 private:
 	smart_ptr_list<LineGodot> _lines;
-	std::vector<Splitter> _splitters;
+	smart_list_togglable<Splitter> _splitters;
 	std::vector<Merger> _mergers;
 	std::vector<Sorter> _sorters;
 	std::vector<Bridge> _bridges;

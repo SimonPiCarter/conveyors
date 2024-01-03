@@ -7,6 +7,8 @@ var test_cur_points : Array[Vector2i] = []
 var entries : Array[int] = []
 @onready var line_build = $line
 
+var splitters = {}
+
 func add_line(in_points : Array[Vector2i], adjusted) -> int:
 	var other : Array[Vector2i] = []
 	for vec in in_points:
@@ -42,27 +44,12 @@ func _process(delta):
 
 var _x = false
 var _c = false
+var _v = false
+var cur_splitter = -1
 
 func _input(event):
 
-	if event is InputEventMouseMotion and _c and cur_points.size() > 0:
-		var camera3d = $Camera3D
-		var from = camera3d.project_ray_origin(event.position)
-		var dist = (from.y + 0.4)/camera3d.project_ray_normal(event.position).y
-		var to = from - camera3d.project_ray_normal(event.position) * dist
-
-		var vec = Vector2i(round(to.x/1.2), round(to.z/1.2))
-
-		test_cur_points = cur_points.duplicate()
-		test_cur_points.push_front(vec)
-		var prepped_line = prep_line(test_cur_points)
-		if not manager_godot.check_line(prepped_line):
-			line_build.set_up_from_line(prep_line(cur_points))
-			test_cur_points = cur_points.duplicate()
-		else:
-			line_build.set_up_from_line(prepped_line)
-
-	if event is InputEventMouseButton and event.is_pressed():
+	if event is InputEventMouse:
 		var camera3d = $Camera3D
 		var from = camera3d.project_ray_origin(event.position)
 		var dist = (from.y + 0.4)/camera3d.project_ray_normal(event.position).y
@@ -70,35 +57,71 @@ func _input(event):
 
 		var vec = Vector2i(round(to.x/1.2), round(to.z/1.2))
 		var is_free = manager_godot.check_point(vec)
-		print(vec, " : ", is_free)
+		var type = manager_godot.get_point_type(vec)
+		var case_idx = manager_godot.get_point_index(vec)
 
-		if event.button_index == MOUSE_BUTTON_RIGHT and not _x:
-			cur_points = []
-			test_cur_points = []
-			line_build.set_up_from_line(cur_points)
-
-		if event.button_index == MOUSE_BUTTON_LEFT and is_free and not _x and _c:
-			cur_points.push_front(vec)
-			var prepped_line = prep_line(cur_points)
+		if event is InputEventMouseMotion and _c and cur_points.size() > 0:
+			test_cur_points = cur_points.duplicate()
+			test_cur_points.push_front(vec)
+			var prepped_line = prep_line(test_cur_points)
 			if not manager_godot.check_line(prepped_line):
-				cur_points.pop_front()
+				line_build.set_up_from_line(prep_line(cur_points))
+				test_cur_points = cur_points.duplicate()
 			else:
 				line_build.set_up_from_line(prepped_line)
 
-		if event.button_index == MOUSE_BUTTON_RIGHT and _x:
-			var line = manager_godot.get_line_from_point(vec)
-			if line >= 0:
-				entries.erase(line)
-				manager_godot.remove_line(line)
+		if event is InputEventMouseButton and event.is_pressed():
+
+			if event.button_index == MOUSE_BUTTON_RIGHT and not _x:
+				cur_points = []
+				test_cur_points = []
+				line_build.set_up_from_line(cur_points)
+
+			if event.button_index == MOUSE_BUTTON_LEFT and is_free and not _x and _c:
+				cur_points.push_front(vec)
+				var prepped_line = prep_line(cur_points)
+				if not manager_godot.check_line(prepped_line):
+					cur_points.pop_front()
+				else:
+					line_build.set_up_from_line(prepped_line)
+
+			if event.button_index == MOUSE_BUTTON_RIGHT and _x:
+				var line = manager_godot.get_line_from_point(vec)
+				if line >= 0:
+					entries.erase(line)
+					manager_godot.remove_line(line)
+
+			if event.button_index == MOUSE_BUTTON_LEFT and _v:
+				if type == 2:
+					var idx_splitter = manager_godot.add_splitter_from_line(case_idx)
+					var splitter = preload("res://scenes/modules/splitter.tscn").instantiate()
+					var pos_2d = manager_godot.get_splitter_pos(idx_splitter)
+					splitter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+					splitters[idx_splitter] = splitter
+					add_child(splitter)
+
+			if event.button_index == MOUSE_BUTTON_LEFT:
+				print(vec, " : ", is_free)
+				if cur_splitter >= 0 and type == 2:
+					manager_godot.connect_line_to_splitter_output(case_idx, cur_splitter)
+				if is_free or type != 3:
+					cur_splitter = -1
+				else:
+					cur_splitter = case_idx
+					print("splitter : ", cur_splitter)
+
 
 	if event is InputEventKey and event.physical_keycode == KEY_X:
 		_x = event.is_pressed()
+
+	if event is InputEventKey and event.physical_keycode == KEY_V:
+		_v = event.is_pressed()
 
 	if event is InputEventKey and event.physical_keycode == KEY_C:
 		_c = event.is_pressed()
 
 	if event is InputEventKey and event.physical_keycode == KEY_SPACE and event.is_pressed():
-		entries.push_back(add_line(prep_line(test_cur_points), false))
+		add_line(prep_line(test_cur_points), false)
 		cur_points = []
 		test_cur_points = []
 		line_build.set_up_from_line(cur_points)

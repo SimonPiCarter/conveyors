@@ -4,6 +4,8 @@
 #include <list>
 #include "grid/Position.hh"
 
+#include "utils/line_handler.hh"
+
 struct ItemOnLine
 {
 	size_t idx = 0;
@@ -17,8 +19,8 @@ struct Line
 	Line(size_t capacity_p);
 
 	std::vector<godot::Vector2i> positions;
-	godot::Vector2i const &get_start() const { return *positions.begin(); }
-	godot::Vector2i const &get_end() const { return *positions.rbegin(); }
+	godot::Vector2i const &get_start() const { return *positions.rbegin(); }
+	godot::Vector2i const &get_end() const { return *positions.begin(); }
 
 	std::vector<ItemOnLine> items;
 	/// @brief list of free idx in the vector
@@ -32,6 +34,9 @@ struct Line
 	unsigned long full_dist = 0;
 
 	unsigned long speed = 50;
+
+	line_handler * handler_start = nullptr;
+	line_handler * handler_end = nullptr;
 };
 
 /// @brief performs a step on a given line

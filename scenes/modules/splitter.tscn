@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://gs8g4jpidxi0"]
+
+[ext_resource type="ArrayMesh" uid="uid://itu40uiio077" path="res://modles/box-small.tres" id="1_juhuy"]
+
+[node name="splitter" type="Node3D"]
+
+[node name="Box-small" type="MeshInstance3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
+mesh = ExtResource("1_juhuy")
+skeleton = NodePath("../..")

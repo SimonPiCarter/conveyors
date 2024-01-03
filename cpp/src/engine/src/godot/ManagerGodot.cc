@@ -16,11 +16,35 @@ void step_and_load(std::vector<line_handler> &vector_p)
 	}
 }
 template<typename line_handler>
+void step_and_load(smart_list_togglable<line_handler> &list_p)
+{
+	for(line_handler &line_handler_l : list_p.vector)
+	{
+		if(line_handler_l.toggled)
+		{
+			step(line_handler_l.innerLine);
+			load(line_handler_l);
+		}
+	}
+}
+
+template<typename line_handler>
 void unload(std::vector<line_handler> &vector_p)
 {
 	for(line_handler &line_handler_l : vector_p)
 	{
 		unload(line_handler_l);
+	}
+}
+template<typename line_handler>
+void unload(smart_list_togglable<line_handler> &list_p)
+{
+	for(line_handler &line_handler_l : list_p.vector)
+	{
+		if(line_handler_l.toggled)
+		{
+			unload(line_handler_l);
+		}
 	}
 }
 
@@ -134,6 +158,7 @@ void ManagerGodot::remove_line(int idx_p)
 	if(_lines.vector[idx_p])
 	{
 		_lines.vector[idx_p]->queue_free();
+		disconnect_all(*_lines.vector[idx_p]->getLine());
 		unset_line_in_grid(grid, _lines.vector[idx_p]->getLine()->positions);
 		_lines.free(idx_p);
 	}
@@ -149,6 +174,16 @@ bool ManagerGodot::check_point(godot::Vector2i const &point_p)
 	return grid.get_case_type(point_p.x , point_p.y) == CaseType::FREE;
 }
 
+int ManagerGodot::get_point_index(godot::Vector2i const &point_p)
+{
+	return grid.get_case_index(point_p.x , point_p.y);
+}
+
+int ManagerGodot::get_point_type(godot::Vector2i const &point_p)
+{
+	return int(grid.get_case_type(point_p.x , point_p.y));
+}
+
 int ManagerGodot::get_line_from_point(godot::Vector2i const &point_p)
 {
 	if(grid.get_case_type(point_p.x , point_p.y) == CaseType::BELT)
@@ -158,21 +193,62 @@ int ManagerGodot::get_line_from_point(godot::Vector2i const &point_p)
 	return -1;
 }
 
-void ManagerGodot::add_splitter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p)
+int ManagerGodot::add_splitter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p)
 {
 	Splitter splitter_l;
 	splitter_l.innerLine.speed = entry_p->getLine()->speed;
 
-	splitter_l.entry = entry_p->getLine();
-	splitter_l.first = first_p->getLine();
-	splitter_l.second = second_p->getLine();
+	if(entry_p)
+	{
+		connect_input(splitter_l, *entry_p->getLine());
+	}
+	if(first_p)
+	{
+		connect_output(splitter_l, *first_p->getLine());
+	}
+	if(second_p)
+	{
+		connect_output(splitter_l, *second_p->getLine());
+	}
 
 	splitter_l.position = pos_p;
-	grid.set_case_type(splitter_l.position.x, splitter_l.position.y, CaseType::SPLITTER);
-	grid.set_case_index(splitter_l.position.x, splitter_l.position.y, _splitters.size());
+	size_t idx_l = _splitters.add(std::move(splitter_l));
+	grid.set_case_type(pos_p.x, pos_p.y, CaseType::SPLITTER);
+	grid.set_case_index(pos_p.x, pos_p.y, idx_l);
 
-	_splitters.push_back(splitter_l);
+	return idx_l;
+}
 
+int ManagerGodot::add_splitter_from_line(int line_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	godot::Vector2i end_l = data_line_l->get_end();
+	return add_splitter(end_l, line_l, nullptr, nullptr);
+}
+
+bool ManagerGodot::connect_line_to_splitter_output(int line_p, int splitter_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	Splitter & splitter_l = _splitters.vector[splitter_p];
+
+	return connect_output(splitter_l, *data_line_l);
+}
+
+bool ManagerGodot::connect_line_to_splitter_input(int line_p, int splitter_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	Splitter & splitter_l = _splitters.vector[splitter_p];
+
+	return connect_input(splitter_l, *data_line_l);
+}
+
+godot::Vector2i const &ManagerGodot::get_splitter_pos(int splitter_p) const
+{
+	Splitter const & splitter_l = _splitters.vector[splitter_p];
+	return splitter_l.position;
 }
 
 void ManagerGodot::add_merger(godot::Vector2i const &pos_p, LineGodot * output_p, LineGodot * first_p, LineGodot * second_p)
@@ -252,7 +328,14 @@ void ManagerGodot::_bind_methods()
 	ClassDB::bind_method(D_METHOD("init_grid", "width", "height"), &ManagerGodot::init_grid);
 	ClassDB::bind_method(D_METHOD("check_line", "points"), &ManagerGodot::check_line);
 	ClassDB::bind_method(D_METHOD("check_point", "point"), &ManagerGodot::check_point);
+	ClassDB::bind_method(D_METHOD("get_point_index", "point"), &ManagerGodot::get_point_index);
+	ClassDB::bind_method(D_METHOD("get_point_type", "point"), &ManagerGodot::get_point_type);
 	ClassDB::bind_method(D_METHOD("get_line_from_point", "point"), &ManagerGodot::get_line_from_point);
+
+	ClassDB::bind_method(D_METHOD("add_splitter_from_line", "line"), &ManagerGodot::add_splitter_from_line);
+	ClassDB::bind_method(D_METHOD("connect_line_to_splitter_output", "line", "splitter"), &ManagerGodot::connect_line_to_splitter_output);
+	ClassDB::bind_method(D_METHOD("connect_line_to_splitter_input", "line", "splitter"), &ManagerGodot::connect_line_to_splitter_input);
+	ClassDB::bind_method(D_METHOD("get_splitter_pos", "splitter"), &ManagerGodot::get_splitter_pos);
 
 	ClassDB::bind_method(D_METHOD("add_line", "points", "speed"), &ManagerGodot::add_line);
 	ClassDB::bind_method(D_METHOD("get_line", "index"), &ManagerGodot::get_line);
