@@ -14,6 +14,8 @@
 #include "factory/Factory.hh"
 #include "grid/Grid.hh"
 
+#include "utils/smart_list.hh"
+
 class ManagerGodot : public godot::Node3D {
 	GDCLASS(ManagerGodot, godot::Node3D)
 
@@ -24,10 +26,13 @@ public:
 
 	void init_grid(size_t width_p, size_t height_p);
 
-	LineGodot* add_line(godot::TypedArray<godot::Vector2i> const &points_p, double speed_p, godot::Ref<godot::Mesh> const &mesh_p);
+	int add_line(godot::TypedArray<godot::Vector2i> const &points_p, double speed_p, godot::Ref<godot::Mesh> const &mesh_p);
+	LineGodot * get_line(int idx_p);
+	void remove_line(int idx_p);
 
 	bool check_line(godot::TypedArray<godot::Vector2i> const &points_p);
 	bool check_point(godot::Vector2i const &point_p);
+	int get_line_from_point(godot::Vector2i const &point_p);
 
 	void add_splitter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p);
 	void add_merger(godot::Vector2i const &pos_p, LineGodot * output_p, LineGodot * first_p, LineGodot * second_p);
@@ -43,7 +48,7 @@ public:
 	static void _bind_methods();
 
 private:
-	std::vector<LineGodot*> _lines;
+	smart_ptr_list<LineGodot> _lines;
 	std::vector<Splitter> _splitters;
 	std::vector<Merger> _mergers;
 	std::vector<Sorter> _sorters;

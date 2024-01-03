@@ -40,9 +40,12 @@ void ManagerGodot::_process(double delta_p)
 		step_and_load<Sorter>(_sorters);
 		step_and_load<Bridge>(_bridges);
 
-		for(LineGodot *line_l : _lines)
+		for(LineGodot *line_l : _lines.vector)
 		{
-			line_l->update();
+			if(line_l)
+			{
+				line_l->update();
+			}
 		}
 
 		unload<Splitter>(_splitters);
@@ -59,7 +62,7 @@ void ManagerGodot::init_grid(size_t width_p, size_t height_p)
 	grid.init_grid(width_p, height_p);
 }
 
-LineGodot* ManagerGodot::add_line(godot::TypedArray<godot::Vector2i> const &points_p, double speed_p, godot::Ref<Mesh> const &mesh_p)
+int ManagerGodot::add_line(godot::TypedArray<godot::Vector2i> const &points_p, double speed_p, godot::Ref<Mesh> const &mesh_p)
 {
 	godot::TypedArray<Vector2i> newPoints_l;
 	Vector2i old_point;
@@ -97,6 +100,7 @@ LineGodot* ManagerGodot::add_line(godot::TypedArray<godot::Vector2i> const &poin
 	for(size_t p = 0 ; p < newPoints_l.size() ; ++p)
 	{
 		godot::Vector2i const &point_l = newPoints_l[p];
+		line_l->getLine()->positions.push_back(point_l);
 		if(p==0)
 		{
 			old_point = point_l;
@@ -106,7 +110,6 @@ LineGodot* ManagerGodot::add_line(godot::TypedArray<godot::Vector2i> const &poin
 		length_l = std::abs(old_point.x - point_l.x) + std::abs(old_point.y - point_l.y);
 		cur_length_l += length_l * 200;
 
-		line_l->getLine()->positions.push_back({old_point, point_l});
 		line_l->add_segment_to_line(
 				Vector3(old_point.x*1.2,0,old_point.y*1.2),
 				Vector3(point_l.x*1.2,0,point_l.y*1.2),
@@ -115,9 +118,25 @@ LineGodot* ManagerGodot::add_line(godot::TypedArray<godot::Vector2i> const &poin
 		old_point = point_l;
 	}
 
-	set_line_in_grid(grid, newPoints_l, _lines.size());
-	_lines.push_back(line_l);
-	return line_l;
+	int idx_l = _lines.add(line_l);
+	set_line_in_grid(grid, line_l->getLine()->positions, idx_l);
+	add_child(line_l);
+	return idx_l;
+}
+
+LineGodot * ManagerGodot::get_line(int idx_p)
+{
+	return _lines.vector[idx_p];
+}
+
+void ManagerGodot::remove_line(int idx_p)
+{
+	if(_lines.vector[idx_p])
+	{
+		_lines.vector[idx_p]->queue_free();
+		unset_line_in_grid(grid, _lines.vector[idx_p]->getLine()->positions);
+		_lines.free(idx_p);
+	}
 }
 
 bool ManagerGodot::check_line(godot::TypedArray<godot::Vector2i> const &points_p)
@@ -128,6 +147,15 @@ bool ManagerGodot::check_line(godot::TypedArray<godot::Vector2i> const &points_p
 bool ManagerGodot::check_point(godot::Vector2i const &point_p)
 {
 	return grid.get_case_type(point_p.x , point_p.y) == CaseType::FREE;
+}
+
+int ManagerGodot::get_line_from_point(godot::Vector2i const &point_p)
+{
+	if(grid.get_case_type(point_p.x , point_p.y) == CaseType::BELT)
+	{
+		return grid.get_case_index(point_p.x , point_p.y);
+	}
+	return -1;
 }
 
 void ManagerGodot::add_splitter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p)
@@ -224,8 +252,11 @@ void ManagerGodot::_bind_methods()
 	ClassDB::bind_method(D_METHOD("init_grid", "width", "height"), &ManagerGodot::init_grid);
 	ClassDB::bind_method(D_METHOD("check_line", "points"), &ManagerGodot::check_line);
 	ClassDB::bind_method(D_METHOD("check_point", "point"), &ManagerGodot::check_point);
+	ClassDB::bind_method(D_METHOD("get_line_from_point", "point"), &ManagerGodot::get_line_from_point);
 
 	ClassDB::bind_method(D_METHOD("add_line", "points", "speed"), &ManagerGodot::add_line);
+	ClassDB::bind_method(D_METHOD("get_line", "index"), &ManagerGodot::get_line);
+	ClassDB::bind_method(D_METHOD("remove_line", "index"), &ManagerGodot::remove_line);
 	ClassDB::bind_method(D_METHOD("add_splitter", "position", "entry", "first", "second"), &ManagerGodot::add_splitter);
 	ClassDB::bind_method(D_METHOD("add_merger", "position", "output", "first", "second"), &ManagerGodot::add_merger);
 	ClassDB::bind_method(D_METHOD("add_sorter", "position", "entry", "first", "second", "type"), &ManagerGodot::add_sorter);

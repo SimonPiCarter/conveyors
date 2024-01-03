@@ -16,9 +16,9 @@ struct Line
 {
 	Line(size_t capacity_p);
 
-	std::vector<PositionLine> positions;
-	Position const &get_start() const { return positions.begin()->start; }
-	Position const &get_end() const { return positions.rbegin()->end; }
+	std::vector<godot::Vector2i> positions;
+	godot::Vector2i const &get_start() const { return *positions.begin(); }
+	godot::Vector2i const &get_end() const { return *positions.rbegin(); }
 
 	std::vector<ItemOnLine> items;
 	/// @brief list of free idx in the vector

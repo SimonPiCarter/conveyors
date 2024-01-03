@@ -34,4 +34,5 @@ struct Grid
 };
 
 bool check_line_in_grid(Grid const &grid_p, godot::TypedArray<godot::Vector2i> const &points_p);
-void set_line_in_grid(Grid &grid_p, godot::TypedArray<godot::Vector2i> const &points_p, size_t idx_p);
+void set_line_in_grid(Grid &grid_p, std::vector<godot::Vector2i> const &points_p, size_t idx_p);
+void unset_line_in_grid(Grid &grid_p, std::vector<godot::Vector2i> const &points_p);

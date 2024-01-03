@@ -1,6 +1,7 @@
 #include "Grid.hh"
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include <unordered_set>
 
 void Grid::init_grid(size_t width_p, size_t height_p)
 {
@@ -32,7 +33,6 @@ size_t Grid::get_case_index(size_t x, size_t y) const
 
 void Grid::set_case_type(size_t x, size_t y, CaseType type_p)
 {
-	godot::UtilityFunctions::print("setting not free : ", x,",", y);
 	type[x*height+y] = type_p;
 }
 
@@ -41,7 +41,8 @@ void Grid::set_case_index(size_t x, size_t y, size_t idx_p)
 	indexes[x*height+y] = idx_p;
 }
 
-std::vector<std::pair<int, int> > getAllCoord(godot::TypedArray<godot::Vector2i> const &points_p)
+template<typename container_t>
+std::vector<std::pair<int, int> > getAllCoord(container_t const &points_p)
 {
 	std::vector<std::pair<int, int> > result_l;
 	godot::Vector2i old_point;
@@ -66,14 +67,22 @@ std::vector<std::pair<int, int> > getAllCoord(godot::TypedArray<godot::Vector2i>
 		}
 		for(int i = minimal ; i <= maximal ; ++i)
 		{
+			std::pair<int, int> pair_l;
 			if(x_mode)
 			{
-				result_l.push_back({i, point.y});
+				pair_l = {i, point.y};
 			}
 			else
 			{
-				result_l.push_back({point.x, i});
+				pair_l = {point.x, i};
 			}
+			// except for very first point we do not add the last point of the precedent line
+			// to avoid dobule checking
+			if(pair_l.first == old_point.x && pair_l.second == old_point.y && old_point != points_p[0])
+			{
+				continue;
+			}
+			result_l.push_back(pair_l);
 		}
 		old_point = point;
 	}
@@ -83,33 +92,44 @@ std::vector<std::pair<int, int> > getAllCoord(godot::TypedArray<godot::Vector2i>
 
 bool check_line_in_grid(Grid const &grid_p, godot::TypedArray<godot::Vector2i> const &points_p)
 {
-	godot::UtilityFunctions::print("check_line_in_grid : ");
 	std::vector<std::pair<int, int> > result_l = getAllCoord(points_p);
+	std::unordered_set<int> already_l;
 	for(auto &&pair_l : result_l)
 	{
-		if(grid_p.get_case_type(pair_l.first, pair_l.second) != CaseType::FREE)
+		if(already_l.find(pair_l.first*1e6+pair_l.second) != already_l.end())
 		{
-			godot::UtilityFunctions::print("\tcase not free : ", pair_l.first,",", pair_l.second);
 			return false;
 		}
-		else
+		already_l.insert(pair_l.first*1e6+pair_l.second);
+
+		if(grid_p.get_case_type(pair_l.first, pair_l.second) != CaseType::FREE)
 		{
-			godot::UtilityFunctions::print("\tcase IS free : ", pair_l.first,",", pair_l.second);
+			return false;
 		}
 	}
 	return true;
 }
 
-void set_line_in_grid(Grid &grid_p, godot::TypedArray<godot::Vector2i> const &points_p, size_t idx_p)
+void set_line_in_grid(Grid &grid_p, std::vector<godot::Vector2i> const &points_p, size_t idx_p)
 {
-	godot::UtilityFunctions::print("set_line_in_grid : ", points_p);
 	std::vector<std::pair<int, int> > result_l = getAllCoord(points_p);
 	for(auto &&pair_l : result_l)
 	{
 		int x = pair_l.first;
 		int y = pair_l.second;
-		godot::UtilityFunctions::print("setting not free : ", x,",", y);
 		grid_p.set_case_type(x, y, CaseType::BELT);
 		grid_p.set_case_index(x, y, idx_p);
+	}
+}
+
+void unset_line_in_grid(Grid &grid_p, std::vector<godot::Vector2i> const &points_p)
+{
+	std::vector<std::pair<int, int> > result_l = getAllCoord(points_p);
+	for(auto &&pair_l : result_l)
+	{
+		int x = pair_l.first;
+		int y = pair_l.second;
+		grid_p.set_case_type(x, y, CaseType::FREE);
+		grid_p.set_case_index(x, y, 0);
 	}
 }
