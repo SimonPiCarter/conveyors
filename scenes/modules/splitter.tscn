@@ -1,10 +1,65 @@
-[gd_scene load_steps=2 format=3 uid="uid://gs8g4jpidxi0"]
+[gd_scene load_steps=7 format=3 uid="uid://gs8g4jpidxi0"]
 
 [ext_resource type="ArrayMesh" uid="uid://itu40uiio077" path="res://modles/box-small.tres" id="1_juhuy"]
+[ext_resource type="Script" path="res://scenes/modules/splitter.gd" id="1_q4418"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3xbbc"]
+
+[sub_resource type="Animation" id="Animation_td2p2"]
+resource_name = "pop"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(2, 2, 2), Vector3(2.5, 2.5, 2.5), Vector3(2, 2, 2)]
+}
+
+[sub_resource type="Animation" id="Animation_0yfnq"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(2, 2, 2)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_agos8"]
+_data = {
+"RESET": SubResource("Animation_0yfnq"),
+"pop": SubResource("Animation_td2p2")
+}
 
 [node name="splitter" type="Node3D"]
+script = ExtResource("1_q4418")
 
 [node name="Box-small" type="MeshInstance3D" parent="."]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 mesh = ExtResource("1_juhuy")
 skeleton = NodePath("../..")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.50112, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_3xbbc")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("../Box-small")
+libraries = {
+"": SubResource("AnimationLibrary_agos8")
+}
+
+[connection signal="input_event" from="StaticBody3D" to="." method="_on_static_body_3d_input_event"]

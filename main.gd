@@ -95,6 +95,8 @@ func _input(event):
 				if type == 2:
 					var idx_splitter = manager_godot.add_splitter_from_line(case_idx)
 					var splitter = preload("res://scenes/modules/splitter.tscn").instantiate()
+					splitter.idx = idx_splitter
+					splitter.clicked.connect(_on_splitter_clicked)
 					var pos_2d = manager_godot.get_splitter_pos(idx_splitter)
 					splitter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
 					splitters[idx_splitter] = splitter
@@ -106,10 +108,6 @@ func _input(event):
 					manager_godot.connect_line_to_splitter_output(case_idx, cur_splitter)
 				if is_free or type != 3:
 					cur_splitter = -1
-				else:
-					cur_splitter = case_idx
-					print("splitter : ", cur_splitter)
-
 
 	if event is InputEventKey and event.physical_keycode == KEY_X:
 		_x = event.is_pressed()
@@ -141,3 +139,6 @@ func prep_line(list_points) -> Array[Vector2i]:
 		old_point = point
 
 	return array
+
+func _on_splitter_clicked(idx):
+	cur_splitter = idx
