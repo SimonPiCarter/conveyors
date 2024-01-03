@@ -42,8 +42,15 @@ public:
 	bool connect_line_to_splitter_input(int line_p, int splitter_p);
 	godot::Vector2i const &get_splitter_pos(int splitter_p) const;
 
+	int add_sorter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p, int type_p);
+	int add_sorter_from_line(int line_p);
+	bool connect_line_to_sorter_output(int line_p, int sorter_p);
+	bool connect_line_to_sorter_input(int line_p, int sorter_p);
+	godot::Vector2i const &get_sorter_pos(int sorter_p) const;
+	void set_sorter_type(int sorter_p, int type_p);
+	int get_sorter_type(int sorter_p) const;
+
 	void add_merger(godot::Vector2i const &pos_p, LineGodot * output_p, LineGodot * first_p, LineGodot * second_p);
-	void add_sorter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p, int type_p);
 	void add_bridge(LineGodot * entry_p, LineGodot * output_p, int length_p);
 
 	void add_score_factory(godot::Vector2i const &pos_p, LineGodot * entry_p, int duration_p, int type_p);
@@ -57,8 +64,8 @@ public:
 private:
 	smart_ptr_list<LineGodot> _lines;
 	smart_list_togglable<Splitter> _splitters;
+	smart_list_togglable<Sorter> _sorters;
 	std::vector<Merger> _mergers;
-	std::vector<Sorter> _sorters;
 	std::vector<Bridge> _bridges;
 	std::vector<Factory> _factories;
 

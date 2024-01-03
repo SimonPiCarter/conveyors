@@ -8,6 +8,7 @@ var entries : Array[int] = []
 @onready var line_build = $line
 
 var splitters = {}
+var sorters = {}
 
 func add_line(in_points : Array[Vector2i], adjusted) -> int:
 	var other : Array[Vector2i] = []
@@ -45,7 +46,9 @@ func _process(delta):
 var _x = false
 var _c = false
 var _v = false
+var _b = false
 var cur_splitter = -1
+var cur_sorter = -1
 
 func _input(event):
 
@@ -91,23 +94,42 @@ func _input(event):
 					entries.erase(line)
 					manager_godot.remove_line(line)
 
-			if event.button_index == MOUSE_BUTTON_LEFT and _v:
+			if event.button_index == MOUSE_BUTTON_LEFT and (_v or _b):
 				if type == 2:
-					var idx_splitter = manager_godot.add_splitter_from_line(case_idx)
-					var splitter = preload("res://scenes/modules/splitter.tscn").instantiate()
-					splitter.idx = idx_splitter
-					splitter.clicked.connect(_on_splitter_clicked)
-					var pos_2d = manager_godot.get_splitter_pos(idx_splitter)
-					splitter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
-					splitters[idx_splitter] = splitter
-					add_child(splitter)
+					if _v:
+						var idx_splitter = manager_godot.add_splitter_from_line(case_idx)
+						if idx_splitter <= 0:
+							return
+						var splitter = preload("res://scenes/modules/splitter.tscn").instantiate()
+						splitter.idx = idx_splitter
+						splitter.clicked.connect(_on_splitter_clicked)
+						var pos_2d = manager_godot.get_splitter_pos(idx_splitter)
+						splitter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+						splitters[idx_splitter] = splitter
+						add_child(splitter)
+					elif _b:
+						var idx_sorter = manager_godot.add_sorter_from_line(case_idx)
+						if idx_sorter <= 0:
+							return
+						var sorter = preload("res://scenes/modules/sorter.tscn").instantiate()
+						sorter.idx = idx_sorter
+						sorter.clicked.connect(_on_sorter_clicked)
+						sorter.wheeled.connect(_on_sorter_wheeled)
+						var pos_2d = manager_godot.get_sorter_pos(idx_sorter)
+						sorter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+						sorters[idx_sorter] = sorter
+						add_child(sorter)
 
 			if event.button_index == MOUSE_BUTTON_LEFT:
 				print(vec, " : ", is_free)
 				if cur_splitter >= 0 and type == 2:
 					manager_godot.connect_line_to_splitter_output(case_idx, cur_splitter)
+				if cur_sorter >= 0 and type == 2:
+					manager_godot.connect_line_to_sorter_output(case_idx, cur_sorter)
 				if is_free or type != 3:
 					cur_splitter = -1
+				if is_free or type != 5:
+					cur_sorter = -1
 
 	if event is InputEventKey and event.physical_keycode == KEY_X:
 		_x = event.is_pressed()
@@ -117,6 +139,9 @@ func _input(event):
 
 	if event is InputEventKey and event.physical_keycode == KEY_C:
 		_c = event.is_pressed()
+
+	if event is InputEventKey and event.physical_keycode == KEY_B:
+		_b = event.is_pressed()
 
 	if event is InputEventKey and event.physical_keycode == KEY_SPACE and event.is_pressed():
 		add_line(prep_line(test_cur_points), false)
@@ -142,3 +167,14 @@ func prep_line(list_points) -> Array[Vector2i]:
 
 func _on_splitter_clicked(idx):
 	cur_splitter = idx
+
+func _on_sorter_clicked(idx):
+	cur_sorter = idx
+
+func _on_sorter_wheeled(idx, up):
+	var type = manager_godot.get_sorter_type(idx)
+	if up:
+		type += 1
+	else:
+		type -= 1
+	manager_godot.set_sorter_type(idx, type)

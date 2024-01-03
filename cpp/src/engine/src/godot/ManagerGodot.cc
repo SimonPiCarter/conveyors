@@ -224,6 +224,10 @@ int ManagerGodot::add_splitter_from_line(int line_p)
 	LineGodot * line_l = _lines.vector[line_p];
 	Line * data_line_l = line_l->getLine();
 	godot::Vector2i end_l = data_line_l->get_end();
+	if(!is_point_free_or_belt(grid, end_l.x, end_l.y))
+	{
+		return -1;
+	}
 	return add_splitter(end_l, line_l, nullptr, nullptr);
 }
 
@@ -268,7 +272,7 @@ void ManagerGodot::add_merger(godot::Vector2i const &pos_p, LineGodot * output_p
 }
 
 
-void ManagerGodot::add_sorter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p, int type_p)
+int ManagerGodot::add_sorter(godot::Vector2i const &pos_p, LineGodot * entry_p, LineGodot * first_p, LineGodot * second_p, int type_p)
 {
 	if(type_p < 0)
 	{
@@ -277,15 +281,73 @@ void ManagerGodot::add_sorter(godot::Vector2i const &pos_p, LineGodot * entry_p,
 	Sorter sorter_l(type_p);
 	sorter_l.innerLine.speed = entry_p->getLine()->speed;
 
-	sorter_l.entry = entry_p->getLine();
-	sorter_l.first = first_p->getLine();
-	sorter_l.second = second_p->getLine();
+	if(entry_p)
+	{
+		connect_input(sorter_l, *entry_p->getLine());
+	}
+	if(first_p)
+	{
+		connect_output(sorter_l, *first_p->getLine());
+	}
+	if(second_p)
+	{
+		connect_output(sorter_l, *second_p->getLine());
+	}
 
 	sorter_l.position = pos_p;
-	grid.set_case_type(sorter_l.position.x, sorter_l.position.y, CaseType::SORTER);
-	grid.set_case_index(sorter_l.position.x, sorter_l.position.y, _sorters.size());
+	size_t idx_l = _sorters.add(std::move(sorter_l));
+	grid.set_case_type(pos_p.x, pos_p.y, CaseType::SORTER);
+	grid.set_case_index(pos_p.x, pos_p.y, idx_l);
 
-	_sorters.push_back(sorter_l);
+	return idx_l;
+}
+
+int ManagerGodot::add_sorter_from_line(int line_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	godot::Vector2i end_l = data_line_l->get_end();
+	if(!is_point_free_or_belt(grid, end_l.x, end_l.y))
+	{
+		return -1;
+	}
+	return add_sorter(end_l, line_l, nullptr, nullptr, 0);
+}
+
+bool ManagerGodot::connect_line_to_sorter_output(int line_p, int sorter_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	Sorter & sorter_l = _sorters.vector[sorter_p];
+
+	return connect_output(sorter_l, *data_line_l);
+}
+
+bool ManagerGodot::connect_line_to_sorter_input(int line_p, int sorter_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	Sorter & sorter_l = _sorters.vector[sorter_p];
+
+	return connect_input(sorter_l, *data_line_l);
+}
+
+godot::Vector2i const &ManagerGodot::get_sorter_pos(int sorter_p) const
+{
+	Sorter const & sorter_l = _sorters.vector[sorter_p];
+	return sorter_l.position;
+}
+
+void ManagerGodot::set_sorter_type(int sorter_p, int type_p)
+{
+	Sorter & sorter_l = _sorters.vector[sorter_p];
+	sorter_l.type = type_p;
+}
+
+int ManagerGodot::get_sorter_type(int sorter_p) const
+{
+	Sorter const & sorter_l = _sorters.vector[sorter_p];
+	return sorter_l.type;
 }
 
 void ManagerGodot::add_bridge(LineGodot * entry_p, LineGodot * output_p, int length_p)
@@ -336,6 +398,13 @@ void ManagerGodot::_bind_methods()
 	ClassDB::bind_method(D_METHOD("connect_line_to_splitter_output", "line", "splitter"), &ManagerGodot::connect_line_to_splitter_output);
 	ClassDB::bind_method(D_METHOD("connect_line_to_splitter_input", "line", "splitter"), &ManagerGodot::connect_line_to_splitter_input);
 	ClassDB::bind_method(D_METHOD("get_splitter_pos", "splitter"), &ManagerGodot::get_splitter_pos);
+
+	ClassDB::bind_method(D_METHOD("add_sorter_from_line", "line"), &ManagerGodot::add_sorter_from_line);
+	ClassDB::bind_method(D_METHOD("connect_line_to_sorter_output", "line", "sorter"), &ManagerGodot::connect_line_to_sorter_output);
+	ClassDB::bind_method(D_METHOD("connect_line_to_sorter_input", "line", "sorter"), &ManagerGodot::connect_line_to_sorter_input);
+	ClassDB::bind_method(D_METHOD("get_sorter_pos", "sorter"), &ManagerGodot::get_sorter_pos);
+	ClassDB::bind_method(D_METHOD("set_sorter_type", "sorter", "type"), &ManagerGodot::set_sorter_type);
+	ClassDB::bind_method(D_METHOD("get_sorter_type", "sorter"), &ManagerGodot::get_sorter_type);
 
 	ClassDB::bind_method(D_METHOD("add_line", "points", "speed"), &ManagerGodot::add_line);
 	ClassDB::bind_method(D_METHOD("get_line", "index"), &ManagerGodot::get_line);

@@ -140,3 +140,9 @@ void unset_line_in_grid(Grid &grid_p, std::vector<godot::Vector2i> const &points
 		}
 	}
 }
+
+bool is_point_free_or_belt(Grid &grid_p, size_t x, size_t y)
+{
+	CaseType type_l = grid_p.get_case_type(x, y);
+	return type_l == CaseType::FREE || type_l == CaseType::BELT;
+}

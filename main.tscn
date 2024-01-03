@@ -113,41 +113,6 @@ transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.553312, 0, 0)
 mesh = ExtResource("2_0ode5")
 skeleton = NodePath("../..")
 
-[node name="Box-small6" type="MeshInstance3D" parent="Node3D"]
-transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.531173, 0, -0.290691)
-mesh = ExtResource("2_0ode5")
-skeleton = NodePath("../..")
-
-[node name="Box-small7" type="MeshInstance3D" parent="Node3D"]
-transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.628424, 0, -0.290691)
-mesh = ExtResource("2_0ode5")
-skeleton = NodePath("../..")
-
-[node name="Box-small8" type="MeshInstance3D" parent="Node3D"]
-transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.697842, 0, -0.290691)
-mesh = ExtResource("2_0ode5")
-skeleton = NodePath("../..")
-
-[node name="Box-small9" type="MeshInstance3D" parent="Node3D"]
-transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.746406, 0, -0.290691)
-mesh = ExtResource("2_0ode5")
-skeleton = NodePath("../..")
-
-[node name="Box-small4" type="MeshInstance3D" parent="Node3D"]
-transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.96, 0, -0.48)
-mesh = ExtResource("2_0ode5")
-skeleton = NodePath("../..")
-
-[node name="Box-small11" type="MeshInstance3D" parent="Node3D"]
-transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.861585, 0, -0.479999)
-mesh = ExtResource("2_0ode5")
-skeleton = NodePath("../..")
-
-[node name="Box-small10" type="MeshInstance3D" parent="Node3D"]
-transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -1.09947, 0, -0.409475)
-mesh = ExtResource("2_0ode5")
-skeleton = NodePath("../..")
-
 [node name="walls" type="Node3D" parent="Node3D"]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, -0.491454, 0, 0.0160624)
 
