@@ -11,6 +11,8 @@ struct Sorter
 	Line * second = nullptr;
 
 	Line innerLine;
+
+	Position position;
 	size_t type = 0;
 };
 

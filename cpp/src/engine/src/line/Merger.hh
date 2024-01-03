@@ -11,6 +11,8 @@ struct Merger
 	Line * second = nullptr;
 
 	Line innerLine;
+
+	Position position;
 };
 
 void load(Merger & merger_p);

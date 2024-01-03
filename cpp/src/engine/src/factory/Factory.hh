@@ -27,6 +27,8 @@ struct Factory
 	/// @brief current step into the process
 	size_t step_count = 0;
 
+	Position position;
+
 	std::function<void(Factory &, size_t)> output_handler = noop_factory;
 };
 

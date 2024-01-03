@@ -80,7 +80,7 @@ light_energy = 3.0
 shadow_enabled = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-1, -7.64601e-14, -8.74228e-08, -7.0918e-08, 0.58476, 0.811206, 5.11213e-08, 0.811206, -0.58476, -42.518, 17.5381, -31.9516)
+transform = Transform3D(-1, -1.04882e-13, -8.74228e-08, -7.0918e-08, 0.58476, 0.811206, 5.11213e-08, 0.811206, -0.58476, 79, 17.538, 80.7909)
 script = ExtResource("2_r2mja")
 speed = 2.0
 
@@ -96,7 +96,7 @@ offset_bottom = 23.0
 [node name="ManagerGodot" type="ManagerGodot" parent="."]
 
 [node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(50, 0, 0, 0, 50, 0, 0, 0, 50, 0, 0, 0)
+transform = Transform3D(50, 0, 0, 0, 50, 0, 0, 0, 50, 120, 0, 120)
 
 [node name="Floor-large" type="MeshInstance3D" parent="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.00776892, 0.38)
@@ -123,8 +123,38 @@ transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.552, 0, -0.6)
 mesh = ExtResource("2_0ode5")
 skeleton = NodePath("../..")
 
+[node name="Box-small6" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.531173, 0, -0.290691)
+mesh = ExtResource("2_0ode5")
+skeleton = NodePath("../..")
+
+[node name="Box-small7" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.628424, 0, -0.290691)
+mesh = ExtResource("2_0ode5")
+skeleton = NodePath("../..")
+
+[node name="Box-small8" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.697842, 0, -0.290691)
+mesh = ExtResource("2_0ode5")
+skeleton = NodePath("../..")
+
+[node name="Box-small9" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.746406, 0, -0.290691)
+mesh = ExtResource("2_0ode5")
+skeleton = NodePath("../..")
+
 [node name="Box-small4" type="MeshInstance3D" parent="Node3D"]
 transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.96, 0, -0.48)
+mesh = ExtResource("2_0ode5")
+skeleton = NodePath("../..")
+
+[node name="Box-small11" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -0.861585, 0, -0.479999)
+mesh = ExtResource("2_0ode5")
+skeleton = NodePath("../..")
+
+[node name="Box-small10" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(0.04, 0, 0, 0, 0.04, 0, 0, 0, 0.04, -1.09947, 0, -0.409475)
 mesh = ExtResource("2_0ode5")
 skeleton = NodePath("../..")
 

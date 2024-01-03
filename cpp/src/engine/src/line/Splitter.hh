@@ -11,6 +11,8 @@ struct Splitter
 	Line * second = nullptr;
 
 	Line innerLine;
+
+	Position position;
 };
 
 void load(Splitter & splitter_p);
