@@ -44,15 +44,19 @@ func _process(delta):
 	for entry in entries:
 		manager_godot.get_line(entry).add_to_line(rand.randi_range(1, 3))
 
-enum build_type {NONE, DELETE, BELT, SPLITTER, SORTER, MERGER}
+enum build_type {NONE, DELETE, BELT, SPLITTER, SORTER, MERGER, SCORE_FACTORY}
 var cur_built_type = build_type.NONE
+var score_factory_type = 1
 
 var cur_splitter = -1
 var cur_sorter = -1
 var cur_merger = -1
 
 func is_handler_line():
-	return cur_built_type == build_type.SPLITTER or cur_built_type == build_type.SORTER or cur_built_type == build_type.MERGER
+	return cur_built_type == build_type.SPLITTER \
+		or cur_built_type == build_type.SORTER \
+		or cur_built_type == build_type.MERGER \
+		or cur_built_type == build_type.SCORE_FACTORY
 
 func _input(event):
 
@@ -137,6 +141,18 @@ func _input(event):
 						mergers[idx_merger] = merger
 						add_child(merger)
 						cur_built_type = build_type.NONE
+					elif cur_built_type == build_type.SCORE_FACTORY:
+						var idx_facto = manager_godot.add_score_factory_from_line(case_idx, 2, 1)
+						if idx_facto < 0:
+							return
+						# var merger = preload("res://scenes/modules/merger.tscn").instantiate()
+						# merger.idx = idx_merger
+						# merger.clicked.connect(_on_merger_clicked)
+						# var pos_2d = manager_godot.get_merger_pos(idx_merger)
+						# merger.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+						# mergers[idx_merger] = merger
+						# add_child(merger)
+						cur_built_type = build_type.NONE
 
 			if event.button_index == MOUSE_BUTTON_LEFT:
 				print(vec, " : ", is_free)
@@ -167,6 +183,9 @@ func _input(event):
 
 	if event is InputEventKey and event.physical_keycode == KEY_N and event.is_pressed():
 		cur_built_type = build_type.MERGER
+
+	if event is InputEventKey and event.physical_keycode == KEY_F and event.is_pressed():
+		cur_built_type = build_type.SCORE_FACTORY
 
 	if event is InputEventKey and event.physical_keycode == KEY_ESCAPE and event.is_pressed():
 		cur_built_type = build_type.NONE

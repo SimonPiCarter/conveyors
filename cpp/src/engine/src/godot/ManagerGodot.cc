@@ -54,7 +54,7 @@ void ManagerGodot::_process(double delta_p)
 
 	if(_elapsed >= 0.1)
 	{
-		for(Factory &facto_l : _factories)
+		for(Factory &facto_l : _factories.vector)
 		{
 			load(facto_l);
 			process(facto_l);
@@ -406,7 +406,7 @@ void ManagerGodot::add_bridge(LineGodot * entry_p, LineGodot * output_p, int len
 	_bridges.push_back(bridge_l);
 }
 
-void ManagerGodot::add_score_factory(godot::Vector2i const &pos_p, LineGodot * entry_p, int duration_p, int type_p)
+int ManagerGodot::add_score_factory(godot::Vector2i const &pos_p, LineGodot * entry_p, int duration_p, int type_p)
 {
 	using namespace std::placeholders;
 	if(duration_p < 0)
@@ -421,13 +421,26 @@ void ManagerGodot::add_score_factory(godot::Vector2i const &pos_p, LineGodot * e
 
 	facto_l.output_handler = std::bind(score_factory, std::ref(stats), size_t(type_p), _1, _2);
 
-	facto_l.entries.push_back(entry_p->getLine());
+	facto_l.in.push_back(entry_p->getLine());
 
 	facto_l.position = pos_p;
-	grid.set_case_type(facto_l.position.x, facto_l.position.y, CaseType::FACTORY);
-	grid.set_case_index(facto_l.position.x, facto_l.position.y, _factories.size());
+	size_t idx_l = _factories.add(std::move(facto_l));
+	grid.set_case_type(pos_p.x, pos_p.y, CaseType::FACTORY);
+	grid.set_case_index(pos_p.x, pos_p.y, idx_l);
 
-	_factories.push_back(facto_l);
+	return idx_l;
+}
+
+int ManagerGodot::add_score_factory_from_line(int line_p, int duration_p, int type_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	godot::Vector2i end_l = data_line_l->get_end();
+	if(!is_point_free_or_belt(grid, end_l.x, end_l.y))
+	{
+		return -1;
+	}
+	return add_score_factory(end_l, line_l, duration_p, type_p);
 }
 
 void ManagerGodot::_bind_methods()
@@ -467,6 +480,8 @@ void ManagerGodot::_bind_methods()
 
 
 	ClassDB::bind_method(D_METHOD("add_score_factory", "position", "entry", "duration", "type"), &ManagerGodot::add_score_factory);
+	ClassDB::bind_method(D_METHOD("add_score_factory_from_line", "line", "duration", "type"), &ManagerGodot::add_score_factory_from_line);
+
 	ClassDB::bind_method(D_METHOD("get_score"), &ManagerGodot::get_score);
 
 	ADD_GROUP("ManagerGodot", "ManagerGodot_");

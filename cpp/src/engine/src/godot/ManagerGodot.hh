@@ -58,7 +58,8 @@ public:
 
 	void add_bridge(LineGodot * entry_p, LineGodot * output_p, int length_p);
 
-	void add_score_factory(godot::Vector2i const &pos_p, LineGodot * entry_p, int duration_p, int type_p);
+	int add_score_factory(godot::Vector2i const &pos_p, LineGodot * entry_p, int duration_p, int type_p);
+	int add_score_factory_from_line(int line_p, int duration_p, int type_p);
 
 	double get_score() { return stats.score; }
 
@@ -72,7 +73,7 @@ private:
 	smart_list_togglable<Sorter> _sorters;
 	smart_list_togglable<Merger> _mergers;
 	std::vector<Bridge> _bridges;
-	std::vector<Factory> _factories;
+	smart_list_togglable<Factory> _factories;
 
 	double _elapsed = 0.;
 

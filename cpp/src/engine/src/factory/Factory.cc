@@ -18,9 +18,9 @@ void score_factory(Statistics &stats_p, size_t good_p, Factory &, size_t idx_p)
 
 void load(Factory & factory_p)
 {
-	for(size_t i = 0 ; i < factory_p.entries.size() ; ++ i)
+	for(size_t i = 0 ; i < factory_p.in.size() ; ++ i)
 	{
-		Line * entry_l = factory_p.entries[i];
+		Line * entry_l = factory_p.in[i];
 		if(entry_l && can_consume(*entry_l)
 		&& factory_p.buffer.size() < factory_p.max_buffer_size)
 		{
