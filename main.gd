@@ -98,7 +98,7 @@ func _input(event):
 				if type == 2:
 					if _v:
 						var idx_splitter = manager_godot.add_splitter_from_line(case_idx)
-						if idx_splitter <= 0:
+						if idx_splitter < 0:
 							return
 						var splitter = preload("res://scenes/modules/splitter.tscn").instantiate()
 						splitter.idx = idx_splitter
@@ -109,7 +109,7 @@ func _input(event):
 						add_child(splitter)
 					elif _b:
 						var idx_sorter = manager_godot.add_sorter_from_line(case_idx)
-						if idx_sorter <= 0:
+						if idx_sorter < 0:
 							return
 						var sorter = preload("res://scenes/modules/sorter.tscn").instantiate()
 						sorter.idx = idx_sorter
