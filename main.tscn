@@ -103,7 +103,8 @@ grow_vertical = 0
 text = "X right click : delete line
 C : build line
 V : add splitter at end of line
-B : add sorter at end of line"
+B : add sorter at end of line
+N : add merger at beginning of the line"
 
 [node name="ManagerGodot" type="ManagerGodot" parent="."]
 

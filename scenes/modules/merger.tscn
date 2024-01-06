@@ -1,6 +1,6 @@
-[gd_scene load_steps=10 format=3 uid="uid://b5ne0jqt5ggog"]
+[gd_scene load_steps=10 format=3 uid="uid://d37e1htug3u2i"]
 
-[ext_resource type="Script" path="res://scenes/modules/sorter.gd" id="1_cem3y"]
+[ext_resource type="Script" path="res://scenes/modules/merger.gd" id="1_nueef"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i04sg"]
 resource_name = "cardboard"
@@ -105,8 +105,8 @@ _data = {
 "pop": SubResource("Animation_td2p2")
 }
 
-[node name="sorter" type="Node3D"]
-script = ExtResource("1_cem3y")
+[node name="merger" type="Node3D"]
+script = ExtResource("1_nueef")
 
 [node name="Box-small" type="MeshInstance3D" parent="."]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)

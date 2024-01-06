@@ -9,6 +9,7 @@ var entries : Array[int] = []
 
 var splitters = {}
 var sorters = {}
+var mergers = {}
 
 func add_line(in_points : Array[Vector2i], adjusted) -> int:
 	var other : Array[Vector2i] = []
@@ -43,12 +44,15 @@ func _process(delta):
 	for entry in entries:
 		manager_godot.get_line(entry).add_to_line(rand.randi_range(1, 3))
 
-var _x = false
-var _c = false
-var _v = false
-var _b = false
+enum build_type {NONE, DELETE, BELT, SPLITTER, SORTER, MERGER}
+var cur_built_type = build_type.NONE
+
 var cur_splitter = -1
 var cur_sorter = -1
+var cur_merger = -1
+
+func is_handler_line():
+	return cur_built_type == build_type.SPLITTER or cur_built_type == build_type.SORTER or cur_built_type == build_type.MERGER
 
 func _input(event):
 
@@ -63,7 +67,7 @@ func _input(event):
 		var type = manager_godot.get_point_type(vec)
 		var case_idx = manager_godot.get_point_index(vec)
 
-		if event is InputEventMouseMotion and _c and cur_points.size() > 0:
+		if event is InputEventMouseMotion and cur_built_type == build_type.BELT and cur_points.size() > 0:
 			test_cur_points = cur_points.duplicate()
 			test_cur_points.push_front(vec)
 			var prepped_line = prep_line(test_cur_points)
@@ -75,12 +79,12 @@ func _input(event):
 
 		if event is InputEventMouseButton and event.is_pressed():
 
-			if event.button_index == MOUSE_BUTTON_RIGHT and not _x:
+			if event.button_index == MOUSE_BUTTON_RIGHT and cur_built_type != build_type.DELETE:
 				cur_points = []
 				test_cur_points = []
 				line_build.set_up_from_line(cur_points)
 
-			if event.button_index == MOUSE_BUTTON_LEFT and is_free and not _x and _c:
+			if event.button_index == MOUSE_BUTTON_LEFT and is_free and cur_built_type == build_type.BELT:
 				cur_points.push_front(vec)
 				var prepped_line = prep_line(cur_points)
 				if not manager_godot.check_line(prepped_line):
@@ -88,15 +92,15 @@ func _input(event):
 				else:
 					line_build.set_up_from_line(prepped_line)
 
-			if event.button_index == MOUSE_BUTTON_RIGHT and _x:
+			if event.button_index == MOUSE_BUTTON_RIGHT and cur_built_type == build_type.DELETE:
 				var line = manager_godot.get_line_from_point(vec)
 				if line >= 0:
 					entries.erase(line)
 					manager_godot.remove_line(line)
 
-			if event.button_index == MOUSE_BUTTON_LEFT and (_v or _b):
+			if event.button_index == MOUSE_BUTTON_LEFT and is_handler_line():
 				if type == 2:
-					if _v:
+					if cur_built_type == build_type.SPLITTER:
 						var idx_splitter = manager_godot.add_splitter_from_line(case_idx)
 						if idx_splitter < 0:
 							return
@@ -107,7 +111,8 @@ func _input(event):
 						splitter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
 						splitters[idx_splitter] = splitter
 						add_child(splitter)
-					elif _b:
+						cur_built_type = build_type.NONE
+					elif cur_built_type == build_type.SORTER:
 						var idx_sorter = manager_godot.add_sorter_from_line(case_idx)
 						if idx_sorter < 0:
 							return
@@ -119,6 +124,19 @@ func _input(event):
 						sorter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
 						sorters[idx_sorter] = sorter
 						add_child(sorter)
+						cur_built_type = build_type.NONE
+					elif cur_built_type == build_type.MERGER:
+						var idx_merger = manager_godot.add_merger_from_line(case_idx)
+						if idx_merger < 0:
+							return
+						var merger = preload("res://scenes/modules/merger.tscn").instantiate()
+						merger.idx = idx_merger
+						merger.clicked.connect(_on_merger_clicked)
+						var pos_2d = manager_godot.get_merger_pos(idx_merger)
+						merger.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+						mergers[idx_merger] = merger
+						add_child(merger)
+						cur_built_type = build_type.NONE
 
 			if event.button_index == MOUSE_BUTTON_LEFT:
 				print(vec, " : ", is_free)
@@ -126,28 +144,39 @@ func _input(event):
 					manager_godot.connect_line_to_splitter_output(case_idx, cur_splitter)
 				if cur_sorter >= 0 and type == 2:
 					manager_godot.connect_line_to_sorter_output(case_idx, cur_sorter)
+				if cur_merger >= 0 and type == 2:
+					manager_godot.connect_line_to_merger_input(case_idx, cur_merger)
 				if is_free or type != 3:
 					cur_splitter = -1
 				if is_free or type != 5:
 					cur_sorter = -1
+				if is_free or type != 6:
+					cur_merger = -1
 
-	if event is InputEventKey and event.physical_keycode == KEY_X:
-		_x = event.is_pressed()
+	if event is InputEventKey and event.physical_keycode == KEY_X and event.is_pressed():
+		cur_built_type = build_type.DELETE
 
-	if event is InputEventKey and event.physical_keycode == KEY_V:
-		_v = event.is_pressed()
+	if event is InputEventKey and event.physical_keycode == KEY_V and event.is_pressed():
+		cur_built_type = build_type.SPLITTER
 
-	if event is InputEventKey and event.physical_keycode == KEY_C:
-		_c = event.is_pressed()
+	if event is InputEventKey and event.physical_keycode == KEY_C and event.is_pressed():
+		cur_built_type = build_type.BELT
 
-	if event is InputEventKey and event.physical_keycode == KEY_B:
-		_b = event.is_pressed()
+	if event is InputEventKey and event.physical_keycode == KEY_B and event.is_pressed():
+		cur_built_type = build_type.SORTER
+
+	if event is InputEventKey and event.physical_keycode == KEY_N and event.is_pressed():
+		cur_built_type = build_type.MERGER
+
+	if event is InputEventKey and event.physical_keycode == KEY_ESCAPE and event.is_pressed():
+		cur_built_type = build_type.NONE
 
 	if event is InputEventKey and event.physical_keycode == KEY_SPACE and event.is_pressed():
 		add_line(prep_line(test_cur_points), false)
 		cur_points = []
 		test_cur_points = []
 		line_build.set_up_from_line(cur_points)
+		cur_built_type = build_type.NONE
 
 func prep_line(list_points) -> Array[Vector2i]:
 	var array : Array[Vector2i] = []
@@ -178,3 +207,6 @@ func _on_sorter_wheeled(idx, up):
 	else:
 		type -= 1
 	manager_godot.set_sorter_type(idx, type)
+
+func _on_merger_clicked(idx):
+	cur_merger = idx
