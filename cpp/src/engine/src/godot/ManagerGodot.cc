@@ -118,7 +118,7 @@ int ManagerGodot::add_line(godot::TypedArray<godot::Vector2i> const &points_p, d
 
 	LineGodot * line_l = memnew(LineGodot);
 	line_l->set_mesh(mesh_p);
-	line_l->set_up_line(2*length_l, speed_p);
+	line_l->set_up_line(2*length_l+1, speed_p);
 
 	int cur_length_l = 0;
 	for(size_t p = 0 ; p < newPoints_l.size() ; ++p)
