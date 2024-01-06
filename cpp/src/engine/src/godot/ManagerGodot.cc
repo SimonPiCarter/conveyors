@@ -255,20 +255,66 @@ godot::Vector2i const &ManagerGodot::get_splitter_pos(int splitter_p) const
 	return splitter_l.position;
 }
 
-void ManagerGodot::add_merger(godot::Vector2i const &pos_p, LineGodot * output_p, LineGodot * first_p, LineGodot * second_p)
+int ManagerGodot::add_merger(godot::Vector2i const &pos_p, LineGodot * output_p, LineGodot * first_p, LineGodot * second_p)
 {
 	Merger merger_l;
-	merger_l.innerLine.speed = std::max(first_p->getLine()->speed, second_p->getLine()->speed);
+	merger_l.innerLine.speed = output_p->getLine()->speed;
 
-	merger_l.output = output_p->getLine();
-	merger_l.first = first_p->getLine();
-	merger_l.second = second_p->getLine();
+	if(first_p)
+	{
+		connect_input(merger_l, *first_p->getLine());
+	}
+	if(second_p)
+	{
+		connect_input(merger_l, *second_p->getLine());
+	}
+	if(output_p)
+	{
+		connect_output(merger_l, *output_p->getLine());
+	}
 
 	merger_l.position = pos_p;
-	grid.set_case_type(merger_l.position.x, merger_l.position.y, CaseType::MERGER);
-	grid.set_case_index(merger_l.position.x, merger_l.position.y, _mergers.size());
+	size_t idx_l = _mergers.add(std::move(merger_l));
+	grid.set_case_type(pos_p.x, pos_p.y, CaseType::MERGER);
+	grid.set_case_index(pos_p.x, pos_p.y, idx_l);
 
-	_mergers.push_back(merger_l);
+	return idx_l;
+}
+
+int ManagerGodot::add_merger_from_line(int line_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	godot::Vector2i start_l = data_line_l->get_start();
+	if(!is_point_free_or_belt(grid, start_l.x, start_l.y))
+	{
+		return -1;
+	}
+	return add_merger(start_l, line_l, nullptr, nullptr);
+}
+
+bool ManagerGodot::connect_line_to_merger_output(int line_p, int merger_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	Merger & merger_l = _mergers.vector[merger_p];
+
+	return connect_output(merger_l, *data_line_l);
+}
+
+bool ManagerGodot::connect_line_to_merger_input(int line_p, int merger_p)
+{
+	LineGodot * line_l = _lines.vector[line_p];
+	Line * data_line_l = line_l->getLine();
+	Merger & merger_l = _mergers.vector[merger_p];
+
+	return connect_input(merger_l, *data_line_l);
+}
+
+godot::Vector2i const &ManagerGodot::get_merger_pos(int merger_p) const
+{
+	Merger const & merger_l = _mergers.vector[merger_p];
+	return merger_l.position;
 }
 
 
@@ -405,6 +451,11 @@ void ManagerGodot::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_sorter_pos", "sorter"), &ManagerGodot::get_sorter_pos);
 	ClassDB::bind_method(D_METHOD("set_sorter_type", "sorter", "type"), &ManagerGodot::set_sorter_type);
 	ClassDB::bind_method(D_METHOD("get_sorter_type", "sorter"), &ManagerGodot::get_sorter_type);
+
+	ClassDB::bind_method(D_METHOD("add_merger_from_line", "line"), &ManagerGodot::add_merger_from_line);
+	ClassDB::bind_method(D_METHOD("connect_line_to_merger_output", "line", "merger"), &ManagerGodot::connect_line_to_merger_output);
+	ClassDB::bind_method(D_METHOD("connect_line_to_merger_input", "line", "merger"), &ManagerGodot::connect_line_to_merger_input);
+	ClassDB::bind_method(D_METHOD("get_merger_pos", "merger"), &ManagerGodot::get_merger_pos);
 
 	ClassDB::bind_method(D_METHOD("add_line", "points", "speed"), &ManagerGodot::add_line);
 	ClassDB::bind_method(D_METHOD("get_line", "index"), &ManagerGodot::get_line);
