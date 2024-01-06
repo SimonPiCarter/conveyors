@@ -93,6 +93,18 @@ transform = Transform3D(0.966944, 0.193968, 0.165518, -0.20685, 0.217101, 0.9539
 offset_right = 40.0
 offset_bottom = 23.0
 
+[node name="Label2" type="Label" parent="CanvasLayer"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -23.0
+offset_right = 40.0
+grow_vertical = 0
+text = "X right click : delete line
+C : build line
+V : add splitter at end of line
+B : add sorter at end of line"
+
 [node name="ManagerGodot" type="ManagerGodot" parent="."]
 
 [node name="Node3D" type="Node3D" parent="."]
