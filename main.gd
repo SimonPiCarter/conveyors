@@ -103,65 +103,73 @@ func _input(event):
 					manager_godot.remove_line(line)
 
 			if event.button_index == MOUSE_BUTTON_LEFT and is_handler_line():
-				if type == 2:
-					if cur_built_type == build_type.SPLITTER:
-						var idx_splitter = manager_godot.add_splitter_from_line(case_idx)
-						if idx_splitter < 0:
-							return
-						var splitter = preload("res://scenes/modules/splitter.tscn").instantiate()
-						splitter.idx = idx_splitter
-						splitter.clicked.connect(_on_splitter_clicked)
-						var pos_2d = manager_godot.get_splitter_pos(idx_splitter)
-						splitter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
-						splitters[idx_splitter] = splitter
-						add_child(splitter)
-						cur_built_type = build_type.NONE
-					elif cur_built_type == build_type.SORTER:
-						var idx_sorter = manager_godot.add_sorter_from_line(case_idx)
-						if idx_sorter < 0:
-							return
-						var sorter = preload("res://scenes/modules/sorter.tscn").instantiate()
-						sorter.idx = idx_sorter
-						sorter.clicked.connect(_on_sorter_clicked)
-						sorter.wheeled.connect(_on_sorter_wheeled)
-						var pos_2d = manager_godot.get_sorter_pos(idx_sorter)
-						sorter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
-						sorters[idx_sorter] = sorter
-						add_child(sorter)
-						cur_built_type = build_type.NONE
-					elif cur_built_type == build_type.MERGER:
-						var idx_merger = manager_godot.add_merger_from_line(case_idx)
-						if idx_merger < 0:
-							return
-						var merger = preload("res://scenes/modules/merger.tscn").instantiate()
-						merger.idx = idx_merger
-						merger.clicked.connect(_on_merger_clicked)
-						var pos_2d = manager_godot.get_merger_pos(idx_merger)
-						merger.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
-						mergers[idx_merger] = merger
-						add_child(merger)
-						cur_built_type = build_type.NONE
-					elif cur_built_type == build_type.SCORE_FACTORY:
-						var idx_facto = manager_godot.add_score_factory_from_line(case_idx, 2, 1)
-						if idx_facto < 0:
-							return
-						# var merger = preload("res://scenes/modules/merger.tscn").instantiate()
-						# merger.idx = idx_merger
-						# merger.clicked.connect(_on_merger_clicked)
-						# var pos_2d = manager_godot.get_merger_pos(idx_merger)
-						# merger.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
-						# mergers[idx_merger] = merger
-						# add_child(merger)
-						cur_built_type = build_type.NONE
+				if cur_built_type == build_type.SPLITTER:
+					var idx_splitter = manager_godot.add_splitter(vec)
+					if idx_splitter < 0:
+						return
+					var splitter = preload("res://scenes/modules/splitter.tscn").instantiate()
+					splitter.idx = idx_splitter
+					splitter.clicked.connect(_on_splitter_clicked)
+					var pos_2d = manager_godot.get_splitter_pos(idx_splitter)
+					splitter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+					splitters[idx_splitter] = splitter
+					add_child(splitter)
+					cur_built_type = build_type.NONE
+				elif cur_built_type == build_type.SORTER:
+					var idx_sorter = manager_godot.add_sorter(vec)
+					if idx_sorter < 0:
+						return
+					var sorter = preload("res://scenes/modules/sorter.tscn").instantiate()
+					sorter.idx = idx_sorter
+					sorter.clicked.connect(_on_sorter_clicked)
+					sorter.wheeled.connect(_on_sorter_wheeled)
+					var pos_2d = manager_godot.get_splitter_pos(idx_sorter)
+					sorter.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+					sorter[idx_sorter] = sorter
+					add_child(sorter)
+					cur_built_type = build_type.NONE
+				elif cur_built_type == build_type.MERGER:
+					var idx_merger = manager_godot.add_merger(vec)
+					if idx_merger < 0:
+						return
+					var merger = preload("res://scenes/modules/merger.tscn").instantiate()
+					merger.idx = idx_merger
+					merger.clicked.connect(_on_merger_clicked)
+					var pos_2d = manager_godot.get_splitter_pos(idx_merger)
+					merger.position = Vector3(pos_2d.x*1.2,0,pos_2d.y*1.2)
+					merger[idx_merger] = merger
+					add_child(merger)
+					cur_built_type = build_type.NONE
 
 			if event.button_index == MOUSE_BUTTON_LEFT:
 				print(vec, " : ", is_free)
 				if cur_splitter >= 0 and type == 2:
-					manager_godot.connect_line_to_splitter_output(case_idx, cur_splitter)
+					var pos_2d = manager_godot.get_splitter_pos(cur_splitter)
+					manager_godot.add_connector(vec, pos_2d, true)
 				if cur_sorter >= 0 and type == 2:
-					manager_godot.connect_line_to_sorter_output(case_idx, cur_sorter)
+					var pos_2d = manager_godot.get_sorter_pos(cur_sorter)
+					manager_godot.add_connector(vec, pos_2d, true)
 				if cur_merger >= 0 and type == 2:
-					manager_godot.connect_line_to_merger_input(case_idx, cur_merger)
+					var pos_2d = manager_godot.get_merger_pos(cur_merger)
+					manager_godot.add_connector(vec, pos_2d, true)
+				if is_free or type != 3:
+					cur_splitter = -1
+				if is_free or type != 5:
+					cur_sorter = -1
+				if is_free or type != 6:
+					cur_merger = -1
+
+			if event.button_index == MOUSE_BUTTON_RIGHT:
+				print(vec, " : ", is_free)
+				if cur_splitter >= 0 and type == 2:
+					var pos_2d = manager_godot.get_splitter_pos(cur_splitter)
+					manager_godot.add_connector(vec, pos_2d, false)
+				if cur_sorter >= 0 and type == 2:
+					var pos_2d = manager_godot.get_sorter_pos(cur_sorter)
+					manager_godot.add_connector(vec, pos_2d, false)
+				if cur_merger >= 0 and type == 2:
+					var pos_2d = manager_godot.get_merger_pos(cur_merger)
+					manager_godot.add_connector(vec, pos_2d, false)
 				if is_free or type != 3:
 					cur_splitter = -1
 				if is_free or type != 5:
@@ -185,7 +193,7 @@ func _input(event):
 		cur_built_type = build_type.MERGER
 
 	if event is InputEventKey and event.physical_keycode == KEY_F and event.is_pressed():
-		cur_built_type = build_type.SCORE_FACTORY
+			cur_built_type = build_type.SCORE_FACTORY
 
 	if event is InputEventKey and event.physical_keycode == KEY_ESCAPE and event.is_pressed():
 		cur_built_type = build_type.NONE
@@ -214,10 +222,18 @@ func prep_line(list_points) -> Array[Vector2i]:
 	return array
 
 func _on_splitter_clicked(idx):
-	cur_splitter = idx
+	if cur_built_type == build_type.DELETE:
+		manager_godot.del_splitter(idx)
+		cur_splitter = -1
+	else:
+		cur_splitter = idx
 
 func _on_sorter_clicked(idx):
-	cur_sorter = idx
+	if cur_built_type == build_type.DELETE:
+		manager_godot.del_sorter(idx)
+		cur_sorter = -1
+	else:
+		cur_sorter = idx
 
 func _on_sorter_wheeled(idx, up):
 	var type = manager_godot.get_sorter_type(idx)
@@ -228,4 +244,8 @@ func _on_sorter_wheeled(idx, up):
 	manager_godot.set_sorter_type(idx, type)
 
 func _on_merger_clicked(idx):
-	cur_merger = idx
+	if cur_built_type == build_type.DELETE:
+		manager_godot.del_merger(idx)
+		cur_merger = -1
+	else:
+		cur_merger = idx

@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://7v6pbcmnw0px"]
+[gd_scene load_steps=12 format=3 uid="uid://7v6pbcmnw0px"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_t344v"]
 [ext_resource type="ArrayMesh" uid="uid://itu40uiio077" path="res://modles/box-small.tres" id="2_0ode5"]
@@ -6,6 +6,18 @@
 [ext_resource type="ArrayMesh" uid="uid://coh2bs2psnu1t" path="res://modles/structure/floor-large.tres" id="4_gbkhs"]
 [ext_resource type="ArrayMesh" uid="uid://dltldvnaybc33" path="res://modles/structure/structure-wall.tres" id="5_mtapk"]
 [ext_resource type="PackedScene" uid="uid://bifdu0s114lwc" path="res://scenes/lines/line.tscn" id="6_r1oqb"]
+
+[sub_resource type="Environment" id="Environment_jiivt"]
+ambient_light_color = Color(1, 1, 1, 1)
+ssr_enabled = true
+ssao_enabled = true
+ssil_enabled = true
+sdfgi_enabled = true
+sdfgi_use_occlusion = true
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.01
+adjustment_enabled = true
+adjustment_contrast = 2.0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_amj8o"]
 resource_name = "dark"
@@ -73,6 +85,9 @@ shadow_mesh = SubResource("ArrayMesh_unbv2")
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_t344v")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_jiivt")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.775187, -0.461824, -0.43105, -9.96769e-09, -0.68233, 0.731044, -0.631732, -0.566696, -0.528934, -3.75943, 45.1473, -46.5518)

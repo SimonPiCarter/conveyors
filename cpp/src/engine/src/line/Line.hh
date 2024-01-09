@@ -14,6 +14,8 @@ struct ItemOnLine
 	unsigned long dist_to_next = 0;
 };
 
+struct Connector;
+
 struct Line
 {
 	Line(size_t capacity_p);
@@ -35,8 +37,8 @@ struct Line
 
 	unsigned long speed = 50;
 
-	line_handler * handler_start = nullptr;
-	line_handler * handler_end = nullptr;
+	Connector * handler_start = nullptr;
+	Connector * handler_end = nullptr;
 };
 
 /// @brief performs a step on a given line

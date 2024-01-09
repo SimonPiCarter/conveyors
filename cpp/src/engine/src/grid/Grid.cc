@@ -146,3 +146,17 @@ bool is_point_free_or_belt(Grid &grid_p, size_t x, size_t y)
 	CaseType type_l = grid_p.get_case_type(x, y);
 	return type_l == CaseType::FREE || type_l == CaseType::BELT;
 }
+
+bool is_point_free(Grid &grid_p, size_t x, size_t y)
+{
+	CaseType type_l = grid_p.get_case_type(x, y);
+	return type_l == CaseType::FREE;
+}
+
+bool is_handler(CaseType type_p)
+{
+	return type_p == CaseType::SPLITTER
+		|| type_p == CaseType::MERGER
+		|| type_p == CaseType::SORTER
+		|| type_p == CaseType::FACTORY;
+}

@@ -13,12 +13,12 @@ bool connect_input(line_handler & handler_p, Line & line_p)
 		if(handler_p.in[i] == nullptr)
 		{
 			handler_p.in[i] = &line_p;
-			line_p.handler_end = &handler_p;
 			return true;
 		}
 	}
 	return false;
 }
+
 bool connect_output(line_handler & handler_p, Line & line_p)
 {
 	for(size_t i = 0 ; i < handler_p.out.size() ; ++ i )
@@ -26,7 +26,6 @@ bool connect_output(line_handler & handler_p, Line & line_p)
 		if(handler_p.out[i] == nullptr)
 		{
 			handler_p.out[i] = &line_p;
-			line_p.handler_start = &handler_p;
 			return true;
 		}
 	}
@@ -51,14 +50,26 @@ void disconnect(line_handler & handler_p, Line & line_p)
 	}
 }
 
-void disconnect_all(Line & line_p)
+bool has_input_free(line_handler const & handler_p)
 {
-	if(line_p.handler_start)
+	for(size_t i = 0 ; i < handler_p.in.size() ; ++ i )
 	{
-		disconnect(*line_p.handler_start, line_p);
+		if(handler_p.in[i] == nullptr)
+		{
+			return true;
+		}
 	}
-	if(line_p.handler_end)
+	return false;
+}
+
+bool has_output_free(line_handler const & handler_p)
+{
+	for(size_t i = 0 ; i < handler_p.out.size() ; ++ i )
 	{
-		disconnect(*line_p.handler_end, line_p);
+		if(handler_p.out[i] == nullptr)
+		{
+			return true;
+		}
 	}
+	return false;
 }

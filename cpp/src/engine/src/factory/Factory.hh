@@ -13,7 +13,7 @@ void score_factory(Statistics &stats_p, size_t good_p, Factory &, size_t idx_p);
 
 struct Factory : public line_handler
 {
-	Factory(size_t duration_p) : line_handler(0,0), duration(duration_p), max_buffer_size(5) {}
+	Factory(size_t duration_p) : line_handler(1,0), duration(duration_p), max_buffer_size(5) {}
 
 	/// @brief buffered items
 	std::list<size_t> buffer;
